@@ -7,30 +7,37 @@ d3.json(queryUrl, function(data) {
   createFeatures(data.features);
 });
 
+
+// This will be run when L.geoJSON creates the point layer from the GeoJSON data.
+
+
 function createFeatures(earthquakeData) {
 
   // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place and time of the earthquake
-
+  coords = [];
   function onEachFeature(feature, layer) {
-    // console.log(feature.geometry.coordinates);
-    // L.circleMarker(feature.geometry.coordinates, {
-    //   color: 'red',
-    //   fillColor: '#f03',
-    //   fillOpacity: 0.5,
-    //   radius: 500
-    // })
+    coords.push([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
     layer.bindPopup("<h3>" + feature.properties.place +
       "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
-
   }
-
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
+
   var earthquakes = L.geoJSON(earthquakeData, {
+    pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, {
+        radius: feature.properties.mag * 3.5,
+        fillColor: "#2454ad",
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: (feature.properties.mag)/10
+    });
+  },
     onEachFeature: onEachFeature
   });
-
+  // console.log(coords);
   // Sending our earthquakes layer to the createMap function
   createMap(earthquakes);
 }
