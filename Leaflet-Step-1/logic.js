@@ -97,6 +97,36 @@ function createMap(earthquakes) {
     layers: [streetmap, earthquakes]
   });
 
+  function getColor(d) {
+    return d > 6.5 ? '#d73027' :
+           d > 5.5  ? '#f46d43' :
+           d > 4.5  ? '#fdae61' :
+           d > 3.5  ? '#fee08b' :
+           d > 2.5   ? '#ffffbf' :
+           d > 1.5   ? '#d9ef8b' :
+           d > 0   ? '#a6d96a' :
+                      '#66bd63';
+}
+
+var legend = L.control({position: 'bottomright'});
+
+  legend.onAdd = function () {
+  
+      var div = L.DomUtil.create('div', 'info legend'),
+          magnitudes = [0, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5],
+          labels = [];
+  
+      // loop through our density intervals and generate a label with a colored square for each interval
+      for (var i = 0; i < magnitudes.length; i++) {
+          div.innerHTML +=
+              '<i style="background:' + getColor(magnitudes[i] + 1) + '"></i> ' +
+              magnitudes[i] + (magnitudes[i + 1] ? '&ndash;' + magnitudes[i + 1] + '<br>' : '+');
+      }
+  
+      return div;
+  };
+  
+  legend.addTo(myMap);
 
   // Create a layer control
   // Pass in our baseMaps and overlayMaps
