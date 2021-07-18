@@ -19,30 +19,31 @@ function createFeatures(earthquakeData) {
   function onEachFeature(feature, layer) {
     coords.push([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
     layer.bindPopup("<h3>" + feature.properties.place +
-      "</h3><hr><p>" + new Date(feature.properties.time) + "<hr>" + 'Magnitude: '+ feature.properties.mag +"</p>");
+      "</h3><hr><p>" + new Date(feature.properties.time) + "<hr>" + 'Magnitude: '+ feature.properties.mag + "<hr>" +
+      'Depth: '+ feature.geometry.coordinates[2] +"</p>");
   }
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
    function getColor(d) {
-        return d > 6.5 ? '#d73027' :
-               d > 5.5  ? '#f46d43' :
-               d > 4.5  ? '#fdae61' :
-               d > 3.5  ? '#fee08b' :
-               d > 2.5   ? '#ffffbf' :
-               d > 1.5   ? '#d9ef8b' :
-               d > 0   ? '#a6d96a' :
-                          '#66bd63';
-    }
+      return d > 30 ? '#ce1256' :
+      d > 25 ? '#e7298a' :
+      d > 20  ? '#df65b0' :
+      d > 15  ? '#c994c7' :
+      d > 10   ? '#d4b9da' :
+      d > 5   ? '#e7e1ef' :
+      d >= 0   ? '#f7f4f9' :
+                '#980043';
+      }
 
   var earthquakes = L.geoJSON(earthquakeData, {
     pointToLayer: function (feature, latlng) {
       return L.circleMarker(latlng, {
         radius: feature.properties.mag * 3.5,
-        fillColor: getColor(feature.properties.mag),
+        fillColor: getColor(feature.geometry.coordinates[2]),
         // fillColor: '#3f007d',
         weight: 2,
         opacity: 1,
-        color: '#000',
+        color: '#67001f',
         dashArray: '3',
         fillOpacity: 1
     });
@@ -87,14 +88,32 @@ function createMap(earthquakes) {
 
   // Define a baseMaps object to hold our base layers
   var baseMaps = {
-    "Street Map": satellitemap,
+    "Satellite": satellitemap,
     "Grayscale": darkmap,
     "Outdoors": outdoormap
   };
+  
 
   // Create overlay object to hold our overlay layer
+  var link = 'static/js/PB2002_plates.json';
+  var myStyle = {
+    "color": "#ff7800",
+    "weight": 5,
+    "opacity": 0.65
+};
+
+  var tectonic = d3.json(link, function(data) {
+  // Creating a geoJSON layer with the retrieved data
+  L.geoJson(data, {
+    // Passing in our style object
+    style: myStyle
+  }).addTo(myMap)
+  
+});
+var tectonicLayer = L.layerGroup(tectonic);
   var overlayMaps = {
-    Earthquakes: earthquakes
+    Earthquakes: earthquakes,
+    Tectonic: tectonicLayer
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load
@@ -106,51 +125,36 @@ function createMap(earthquakes) {
     layers: [satellitemap, earthquakes]
   });
 
+
   function getColor(d) {
-    return d > 6.5 ? '#d73027' :
-           d > 5.5  ? '#f46d43' :
-           d > 4.5  ? '#fdae61' :
-           d > 3.5  ? '#fee08b' :
-           d > 2.5   ? '#ffffbf' :
-           d > 1.5   ? '#d9ef8b' :
-           d > 0   ? '#a6d96a' :
-                      '#66bd63';
+    return d > 30 ? '#ce1256' :
+           d > 25 ? '#e7298a' :
+           d > 20  ? '#df65b0' :
+           d > 15  ? '#c994c7' :
+           d > 10   ? '#d4b9da' :
+           d > 5   ? '#e7e1ef' :
+           d > 0   ? '#f7f4f9' :
+                      '#980043';
 }
-
-
-
-
-
-var link = 'Leaflet-Step-2/static/js/PB2002_plates.json';
-var tectonic = d3.json(link, function(data) {
-  // Creating a geoJSON layer with the retrieved data
-  L.geoJson(data, {
-    // Passing in our style object
-    // style: myLines
-  }).addTo(myMap);
-});
-
-
-
-
 
 var legend = L.control({position: 'bottomright'});
 
-  legend.onAdd = function () {
+legend.onAdd = function () {
+  // div.innerHTML = labels.join('<br>');
+    var div = L.DomUtil.create('div', 'info legend'),
+        magnitudes = [0, 5, 10, 15, 20, 25, 30],
+        labels = [];
   
-      var div = L.DomUtil.create('div', 'info legend'),
-          magnitudes = [0, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5],
-          labels = [];
-  
-      // loop through our density intervals and generate a label with a colored square for each interval
-      for (var i = 0; i < magnitudes.length; i++) {
-          div.innerHTML +=
-              '<i style="background:' + getColor(magnitudes[i] + 1) + '"></i> ' +
-              magnitudes[i] + (magnitudes[i + 1] ? '&ndash;' + magnitudes[i + 1] + '<br>' : '+');
-      }
-  
-      return div;
-  };
+    // loop through our density intervals and generate a label with a colored square for each interval
+    
+    for (var i = 0; i < magnitudes.length; i++) {
+        div.innerHTML += 
+            '<i style="background:' + getColor(magnitudes[i] + 1) + '"></i> ' +
+            magnitudes[i] + (magnitudes[i + 1] ? '&ndash;' + magnitudes[i + 1] + '<br>' : '+')
+    }
+    // div.innerHTML = labels.join('<br>');
+    return div;
+};
   
   legend.addTo(myMap);
 
