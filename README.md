@@ -1,4 +1,6 @@
-# leaflet-challenge
+# Leaflet Earthquake Mapping
+
+(leaflet-challenge)
 
 ## Objectives:
 This works is done to fulfill the Leaflet assignment for the Data Visualization Bootcamp, specifically, to assess the understanding of the Leaflet/Mapbox topics covered in class.
